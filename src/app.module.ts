@@ -12,6 +12,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import {
   THROTTLER_CONFIG,
   THROTTLER_GUARD,
+  VALIDATION_PIPE,
 } from './utils';
 
 @Module({
@@ -26,6 +27,10 @@ import {
     UserModule,
   ],
   controllers: [AppController],
-  providers: [AppService, THROTTLER_GUARD],
+  providers: [
+    AppService,
+    THROTTLER_GUARD,
+    VALIDATION_PIPE,
+  ],
 })
 export class AppModule {}
