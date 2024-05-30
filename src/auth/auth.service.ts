@@ -1,20 +1,14 @@
-// import { HttpService } from '@nestjs/axios';
-import {
-  Injectable,
-  // Logger,
-} from '@nestjs/common';
-// import { ConfigService } from '@nestjs/config';
-// import { AxiosError } from 'axios';
-// import { catchError, firstValueFrom } from 'rxjs';
+import { Injectable } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { AdminDto, VoterDto } from 'src/dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ResponseData } from 'src/utils';
 
 @Injectable()
 export class AuthService {
-  // private logger = new Logger(AuthService.name);
   constructor(
-    private prisma: PrismaService, //   private httpService: HttpService, //   private config: ConfigService,
+    private prisma: PrismaService,
+    private jwt: JwtService,
   ) {}
   //TODO: Implementar token
   async signinVoter(
@@ -25,6 +19,12 @@ export class AuthService {
         await this.prisma.users.findUnique({
           where: {
             email: dto.email,
+          },
+          select: {
+            id: true,
+            name: true,
+            last_name: true,
+            is_admin: true,
           },
         });
 
@@ -37,12 +37,18 @@ export class AuthService {
         };
       }
 
+      const payload = {
+        sub: user.id,
+      };
+
       return {
         ok: true,
         data: {
           message: 'Usuario encontrado',
-          user_id: user.id,
-          user: user.name + user.last_name,
+          token: await this.jwt.signAsync(
+            payload,
+          ),
+          user: `${user.name} ${user.last_name}`,
         },
       };
     } catch (error) {
@@ -79,17 +85,3 @@ export class AuthService {
     };
   }
 }
-
-// async loginWP(dto: AuthDto): Promise<any> {
-//   const response = await firstValueFrom(
-//     this.httpService
-//       .post(this.config.get('WP_LOGIN'), dto)
-//       .pipe(
-//         catchError((error: AxiosError) => {
-//           this.logger.error(error.message);
-//           throw 'Ha ocurrido un error';
-//         }),
-//       ),
-//   );
-//   return response.data;
-// }
